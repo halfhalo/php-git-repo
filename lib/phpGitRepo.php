@@ -111,7 +111,44 @@ class phpGitRepo
     {
         return in_array($branchName, $this->getBranches());
     }
-
+	public function makeBranch($branchName)
+	{
+		if($this->hasBranch($branchName))
+		{
+			return true;
+		}
+		else
+		{
+			$output=$this-git(sprintf("checkout -b %s", $branchName));
+			if($output=="Switched to a new branch '".$branchName."'")
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+	public function switchBranch($branchName)
+	{
+		if($this->hasBranch($branchName))
+		{
+			$output=$this->git(sprintf("checkout %s", $branchName));
+			if($output=="Switched to branch '".$branchName."'")
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
     /**
      * Get tags list
      *
@@ -122,7 +159,28 @@ class phpGitRepo
         $output = $this->git('tag');
         return $output ? array_filter(explode("\n", $output)) : array();
     }
-
+	public function addTag($tag)
+	{
+		$this->git(sprintf("tag %s",$tag));
+		return true;
+	}
+	public function hasTag($tag)
+	{
+		$tags=$this->getTags();
+		if(in_array($tag,$tags))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	public function lastTag()
+	{
+		$tags=$this->getTags();
+		return array_pop($tags);
+	}
     /**
      * Return the result of `git log` formatted in a PHP array
      *
@@ -155,7 +213,29 @@ class phpGitRepo
 
         return $commits;
     }
-
+	public function addToGit($files,$branch,$tag)
+	{
+		if(!$this->hasBranch($branch))
+		{
+			$this->makeBranch($branch);
+		}
+		$this->switchBranch($branch);
+		$this->addTag($tag);
+		$this->commit($files);
+		return true;
+	}
+	public function add($files)
+	{
+		$filelist=implode($files, " ");
+		$this->git(sprintf("add %s",$filelist));
+		return true;
+	}
+	public function commit($files)
+	{
+		$filelist=implode($files,"\n");
+		$this->git(sprintf("commit -m 'Adding files: %s'",$filelist));
+		return true;
+	}
     /**
      * Check if a directory is a valid Git repository
      */

@@ -30,7 +30,7 @@ class phpGitRepoCommand
 
         $this->dir            = $dir;
         $this->commandString  = $commandString;
-        $this->debug          = $debug;
+        $this->debug          = true;//$debug;
     }
 
     public function run()
